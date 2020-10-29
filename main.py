@@ -18,7 +18,7 @@ if __name__ == "__main__":
         Table[i][8] = spring.find_force(max_s)
         Table[i][9:14] = spring.find_stress(max_s)
 
-        spring.plot_force(0,max_s+1)
+        spring.plot_force(0,max_s, i)
 
     Output = pd.DataFrame(Table, columns=Columns)
     Output.to_csv("spring_input.csv", index=False)

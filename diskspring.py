@@ -77,7 +77,7 @@ class DiscSpring:
 
         return A*B*C*(D*E + 1)
 
-    def plot_force(self, start, end):
+    def plot_force(self, start, end, number):
         s = np.linspace(start, end, 100)
         F = np.zeros(100)
 
@@ -87,9 +87,11 @@ class DiscSpring:
         plt.plot(s,F)
         plt.xlabel("Displacement (mm)")
         plt.ylabel("Force (N)")
-        plt.title("Spring Force Displacement Plot")
+        plt.title("Run #{}. Spring Force Displacement Plot".format(number+1))
         plt.grid(which='major')
+        plt.savefig("figures/run{}".format(number+1))
         plt.show()
+        
 
     def find_stress(self, s):
         stress = np.zeros(5)
