@@ -117,16 +117,3 @@ class DiscSpring:
             (self.h0/self.t - s/(2*self.t)) + self.K_3)
 
         return stress
-
-
-
-        
-
-
-
-
-
-
-
-
-        

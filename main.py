@@ -1,11 +1,12 @@
 from diskspring import *
 import csv
 import pandas as pd
+import sys
 
 
 if __name__ == "__main__":
 
-    Data = pd.read_csv("spring_input.csv")
+    Data = pd.read_csv(sys.argv[1])
     Table = Data.values.tolist()
     Columns = Data.columns
 
