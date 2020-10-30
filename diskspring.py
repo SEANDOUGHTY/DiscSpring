@@ -91,6 +91,7 @@ class DiscSpring:
         plt.grid(which='major')
         plt.savefig("figures/run{}".format(number+1))
         plt.show()
+        plt.close()
         
 
     def find_stress(self, s):
