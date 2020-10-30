@@ -7,35 +7,52 @@ from scipy.optimize import minimize
 class Optimizer():
     def __init__(self, inital_guess):
         self.inital_guess = inital_guess
-        self.bnds = ((205,205),(116,116),(4,8),(0.3,5),(0.3,5),(210000,210000),(0.3,0.3))
-        self.con1 = {'type': 'ineq', 'fun': self.force_constraint}
-        self.con2 = {'type': 'ineq', 'fun': self.displacement_constraint}
+        self.bnds = ((197,210),(116,140),(5.5,11),(0.5,6))
+        self.con1 = {'type': 'ineq', 'fun': self.stress_constraint}
+        self.con2 = {'type': 'ineq', 'fun': self.curve_constraint}
+        
         self.cons = [self.con1, self.con2]
+        
      
     def objective(self, guess):
+        #Objective: reach target force specified
+        target_force = 3000
+
         spring = DiscSpring(guess)
         max_s = 0.75 * spring.h0
-        max_stress = abs(max(spring.find_stress(max_s)))
+        resting_s = max_s - 1.5
+        brake_force = spring.find_force(resting_s)
 
-        return max_stress
+        return math.sqrt((brake_force - target_force)**2)
 
-    def force_constraint(self, guess):
+    def stress_constraint(self, guess):
+        #Stress: Keep max stresses below the allowable stress in MPa
+        allowable_stress = 600 
+
         spring = DiscSpring(guess)
         max_s = 0.75 * spring.h0
-        max_force = spring.find_force(max_s)
-        desired_force = 3000
+        
+        StressTable = np.zeros([100,5])
+        for i in range(100):
+            StressTable[i] = spring.find_stress(max_s*(i+1)/100)
 
-        return max_s - desired_force
+        max_stress = np.max(StressTable)
 
-    def displacement_constraint(self, guess):
+        return allowable_stress - max_stress
+
+    def curve_constraint(self, guess):
+        #Constrains spring characteristic curve above specified value (h_o/t)
+        min_curve_constant = 1.4
         spring = DiscSpring(guess)
-        max_s = 0.75 * spring.h0
+        curve_constant = spring.h0/spring.t
 
-        return max_s - 4.5
+        return curve_constant - min_curve_constant
 
     def solution(self):
+        #Least Squares Optimizer
         solution = minimize(self.objective, self.inital_guess, method='SLSQP',\
             bounds=self.bnds, constraints=self.cons)
-
+        
+        
         print(solution)
         return solution

@@ -1,6 +1,7 @@
 import math
 import numpy as np
 import matplotlib.pyplot as plt
+import matplotlib.patches as mpatches
 
 class DiscSpring:
     #t1 = t'
@@ -9,9 +10,9 @@ class DiscSpring:
         self.D_i = Input[1]
         self.I_o = Input[2]
         self.t = Input[3]
-        self.t1 = Input[4]
-        self.E = Input[5]
-        self.mu = Input[6]
+        self.t1 = self.t
+        self.E = 210000
+        self.mu = 0.3
         self.h0 = self.I_o - self.t
     
         #Formula 1 (Find center of rotation during deflection)
@@ -73,18 +74,24 @@ class DiscSpring:
         B = (self.t**4) / (self.K_1 * self.D_e**2)
         C = s / self.t
         D = (self.h0/self.t) - (s/self.t)
-        E = (self.h0/self.t) - (s/2*self.t)
+        E = (self.h0/self.t) - (s/(2*self.t))
 
         return A*B*C*(D*E + 1)
 
-    def plot_force(self, start, end, number):
-        s = np.linspace(start, end, 100)
+    def plot_force(self, number):
+        s = np.linspace(0, self.h0, 100)
         F = np.zeros(100)
 
         for i in range(len(s)):
             F[i] = self.find_force(s[i])
 
-        plt.plot(s,F)
+        
+        plt.plot(s,F, label='data')
+        plt.axvline(x=self.h0, c='r', ls='--', label='Flat')
+        plt.axvline(x=0.75*self.h0, c='y', ls='--', label='75% Flat')
+        plt.axvline(x=0.75*self.h0 - 1.5, c='g', ls='--', label='Resting')
+        plt.legend(loc="upper left")
+
         plt.xlabel("Displacement (mm)")
         plt.ylabel("Force (N)")
         plt.title("Run #{}. Spring Force Displacement Plot".format(number+1))

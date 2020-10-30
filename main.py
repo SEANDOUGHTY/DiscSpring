@@ -7,30 +7,43 @@ import sys
 
 if __name__ == "__main__":
 
-    Data = pd.read_csv(sys.argv[1])
+    Data = pd.read_csv("spring_input_1.csv")
     Table = Data.values.tolist()
     Columns = Data.columns
 
-    optum =  Optimizer([205,116,8,3,3,210000,3])
-    solution = optum.solution()
-    #solution = optum.brute()
+    # optum =  Optimizer([210,140,8,3])
+    # solution = optum.solution()
 
-    print(solution)
+    # spring = DiscSpring(solution.x)
+    # max_s = 0.75 * spring.h0
+
+    # print("Force:{}".format(spring.find_force(max_s)))
+    # print("Rest-Force:{}".format(spring.find_force(max_s-1.5)))
+    # print("Stress:{}".format(spring.find_stress(max_s)))
+
+    # spring.plot_force(0)
 
 
-    # for i in range(len(Table)):
-    #     spring = DiscSpring(Table[i][0:7])
 
-    #     max_s = 0.75 * spring.h0
+    for i in range(len(Table)):
+        spring = DiscSpring(Table[i][0:6])
 
-    #     Table[i][7] = max_s
-    #     Table[i][8] = spring.find_force(max_s)
-    #     Table[i][9:14] = spring.find_stress(max_s)
+        max_s = 0.75 * spring.h0
 
-    #     spring.plot_force(0,max_s, i)
+        Table[i][6] = max_s
+        Table[i][7] = spring.find_force(max_s)
 
-    # Output = pd.DataFrame(Table, columns=Columns)
-    # Output.to_csv("spring_input.csv", index=False)
+
+        StressTable = np.zeros([100,5])
+        for j in range(100):
+            StressTable[j] = spring.find_stress(max_s*(j+1)/100)
+
+        Table[i][8:13] = list(np.amax(StressTable, axis=0))
+
+        spring.plot_force(i)
+
+    Output = pd.DataFrame(Table, columns=Columns)
+    Output.to_csv("spring_input_1.csv", index=False)
     
 
    
