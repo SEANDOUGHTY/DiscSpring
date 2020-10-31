@@ -84,8 +84,7 @@ class DiscSpring:
 
         for i in range(len(s)):
             F[i] = self.find_force(s[i])
-
-        
+ 
         plt.plot(s,F, label='data')
         plt.axvline(x=self.h0, c='r', ls='--', label='Flat')
         plt.axvline(x=0.75*self.h0, c='y', ls='--', label='75% Flat')
@@ -96,6 +95,19 @@ class DiscSpring:
         plt.ylabel("Force (N)")
         plt.title("Run #{}. Spring Force Displacement Plot".format(number+1))
         plt.grid(which='major')
+
+        plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.3)
+        textstr = "teststr"
+        plt.gcf().text(0.1, 0.16, "Outer Diameter (mm): %.1f" % self.D_e, fontsize=10)
+        plt.gcf().text(0.1, 0.11, "Inner Diameter (mm): %.1f" % self.D_i, fontsize=10)
+        plt.gcf().text(0.1, 0.06, "Uncompressed Height (mm): %.1f" % self.I_o, fontsize=10)
+        plt.gcf().text(0.1, 0.01, "Thickness (mm): %.1f" % self.t, fontsize=10)
+
+        plt.gcf().text(0.5, 0.16, 'Resting Force (N): %.1f' % self.find_force(self.h0*0.75 - 1.5), fontsize=10)
+        plt.gcf().text(0.5, 0.11, "Loaded Force (N): %.1f" % self.find_force(self.h0*0.75), fontsize=10)
+        plt.gcf().text(0.5, 0.06, "Max Stress (MPa): %.1f" % max(self.find_max_stress()), fontsize=10)
+        
+
         plt.savefig("figures/run{}".format(number+1))
         plt.show()
         plt.close()
@@ -125,3 +137,16 @@ class DiscSpring:
             (self.h0/self.t - s/(2*self.t)) + self.K_3)
 
         return stress
+
+    def find_max_stress(self):
+        max_s = 0.75 * self.h0
+        
+        StressTable = np.zeros([100,5])
+        for j in range(100):
+            StressTable[j] = self.find_stress(max_s*(j+1)/100)
+        
+
+        max_stress = np.amax(StressTable, axis=0)
+
+        
+        return max_stress

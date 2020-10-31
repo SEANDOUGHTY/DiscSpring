@@ -30,13 +30,13 @@ class Optimizer():
         allowable_stress = 600 
 
         spring = DiscSpring(guess)
-        max_s = 0.75 * spring.h0
+        # max_s = 0.75 * spring.h0
         
-        StressTable = np.zeros([100,5])
-        for i in range(100):
-            StressTable[i] = spring.find_stress(max_s*(i+1)/100)
+        # StressTable = np.zeros([100,5])
+        # for i in range(100):
+        #     StressTable[i] = spring.find_stress(max_s*(i+1)/100)
 
-        max_stress = np.max(StressTable)
+        max_stress = spring.find_max_stress()
 
         return allowable_stress - max_stress
 

@@ -7,14 +7,14 @@ import sys
 
 if __name__ == "__main__":
 
-    Data = pd.read_csv("spring_input_1.csv")
+    Data = pd.read_csv("spring_input_2.csv")
     Table = Data.values.tolist()
     Columns = Data.columns
 
     # optum =  Optimizer([210,140,8,3])
     # solution = optum.solution()
 
-    # spring = DiscSpring(solution.x)
+    # spring = DiscSpring([210,117,6.3,2.1])
     # max_s = 0.75 * spring.h0
 
     # print("Force:{}".format(spring.find_force(max_s)))
@@ -43,7 +43,7 @@ if __name__ == "__main__":
         spring.plot_force(i)
 
     Output = pd.DataFrame(Table, columns=Columns)
-    Output.to_csv("spring_input_1.csv", index=False)
+    Output.to_csv("spring_input_2.csv", index=False)
     
 
    
