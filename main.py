@@ -1,6 +1,7 @@
 from discspring import *
 from optimizer import *
 from brute_force import *
+from datetime import datetime
 import csv
 import pandas as pd
 import sys
@@ -20,7 +21,7 @@ def run_Table(Data):
         spring = DiscSpring(Table[i][0:6])
         spring.fileName = file
 
-        max_s = 0.75 * spring.h0
+        max_s = 0.75 * spring.h_o
 
         Table[i][6] = max_s
         Table[i][7] = spring.find_force(max_s)
@@ -39,37 +40,49 @@ def run_Table(Data):
 
 
 if __name__ == "__main__":
-    file = "brute_columns.csv"
+    mode = "Spring"
+      
+    if mode == "Table":
 
-    Data = pd.read_csv(file)
-    Columns = Data.columns
+        Data = pd.read_csv(file)
+        Columns = Data.columns
 
-    #run_Table(Data)
+        run_Table(Data)
+            
+    elif mode == "Spring":
+        spring = DiscSpring([187,140,7.5,2.1, 1, 1], "Ti-6Al-4V", 108500, 0.34)
+        max_s = 0.75 * spring.H_o
+
+        now = datetime.now()
+        folder_string = "results/run" + now.strftime("_%y%m%d_%H%M%S")
+        Path(folder_string).mkdir(parents=True, exist_ok=True)
+
+        plot_force(spring,folder_string, 0)
+        plot_stress(spring,folder_string, 0)
+
+        print("Force:{}".format(spring.find_force(max_s)))
+        print("Rest-Force:{}".format(spring.find_force(max_s-1.5)))
+        print("Stress:{}".format(spring.find_stress(max_s)))
+
+        
     
-    # optum =  Optimizer([210,140,8,4])
-    # solution = optum.solution()
+    elif mode == "Brute":
+        
+        file = "brute/brute_columns.csv"
 
-    # spring = DiscSpring(solution.x)
+        Data = pd.read_csv(file)
+        Columns = Data.columns
 
-    #spring = DiscSpring([203,116,8,5.5])
-    #max_s = 0.75 * spring.h0
+        Input = "brute/brute_input_8.csv"
+        Output = "brute/brute_output_8.csv"
+        temp = bruteForce(Columns, Input, Output, Material="Ti-6Al-4V", E=108500, mu=0.34, Max_Stress=450)
 
-    spring = SpringStack([203,116,8,5.5], "3S1P")
-
-    folder_string = ("results/debug")
-    plot_stack_force(spring,folder_string, 1)
-
-    # print("Force:{}".format(spring.find_force(max_s)))
-    # print("Rest-Force:{}".format(spring.find_force(max_s-1.5)))
-    # print("Stress:{}".format(spring.find_stress(max_s)))
-
-    # # folder_string = ("results/debug")
-    # # plot_force(spring, folder_string, 0)
-    
-
-    # Input = "brute_input_2.csv"
-    # Output = "brute_output_2.csv"
-    # temp = bruteForce(Columns, Input, Output)
+        s3 = boto3.resource('s3')
+        s3.meta.client.upload_file(Input, 'discspring-output', Input, ExtraArgs={'ACL': 'public-read'})
+        s3.meta.client.upload_file(Output, 'discspring-output', Output, ExtraArgs={'ACL': 'public-read'})
+        url = "https://discspring-output.s3.amazonaws.com/" + Input
+        url = "https://discspring-output.s3.amazonaws.com/" + Output
+        print(url)
     
 
    

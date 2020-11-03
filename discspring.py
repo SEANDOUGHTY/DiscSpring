@@ -4,19 +4,32 @@ import matplotlib.pyplot as plt
 import matplotlib.patches as mpatches
 from datetime import datetime
 from pathlib import Path
+import boto3
+
 
 class DiscSpring:
     #t1 = t'
-    def __init__(self, Input):
+    def __init__(self, Input, Material, E, mu):
         self.fileName = "" #default value to be overwritten
         self.D_e = Input[0]
         self.D_i = Input[1]
-        self.I_o = Input[2]
+        self.l_o = Input[2]
         self.t = Input[3]
+        
+        #Paralell Series
+        self.n_series = Input[4]
+        self.n_parallel = Input[5]
+        
+        #Formula 25
+        self.L_o = self.n_series * (self.l_o + (self.n_parallel - 1)*self.t)
+        
         self.t1 = self.t
-        self.E = 210000
-        self.mu = 0.3
-        self.h0 = self.I_o - self.t
+        self.E = E
+        self.mu = mu
+        self.Material = Material
+        
+        self.h_o = self.l_o - self.t
+        self.H_o = self.n_series * (self.h_o)
     
         #Formula 1 (Find center of rotation during deflection)
         self.D_o = (self.D_e - self.D_i)/(math.log(self.D_e)/self.D_i)
@@ -60,8 +73,8 @@ class DiscSpring:
     def find_c1(self):
         #C_1 = A/(B*C)        
         A = (self.t1 / self.t)**2
-        B = (1/4) * (self.I_o/self.t) - (self.t1/self.t) + (3/4)
-        C = (5/8) * (self.I_o/self.t) - (self.t1/self.t) + (3/8)
+        B = (1/4) * (self.l_o/self.t) - (self.t1/self.t) + (3/4)
+        C = (5/8) * (self.l_o/self.t) - (self.t1/self.t) + (3/8)
         
         if B*C == 0:
             return 0
@@ -70,21 +83,25 @@ class DiscSpring:
     
     def find_c2(self):
         A = self.C_1 / (self.t1/self.t)**3
-        B = (5/32) * (self.I_o/self.t - 1)**2 + 1
+        B = (5/32) * (self.l_o/self.t - 1)**2 + 1
 
         return A*B
 
     #Formula 8a
-    def find_force(self, s):
+    def find_force(self, s_ges):
+        s = s_ges/self.n_series
+
         A = (4 * self.E) / (1 - self.mu**2)
         B = (self.t**4) / (self.K_1 * self.D_e**2)
         C = s / self.t
-        D = (self.h0/self.t) - (s/self.t)
-        E = (self.h0/self.t) - (s/(2*self.t))
+        D = (self.h_o/self.t) - (s/self.t)
+        E = (self.h_o/self.t) - (s/(2*self.t))
 
-        return A*B*C*(D*E + 1)      
+        return A*B*C*(D*E + 1)*self.n_parallel      
 
-    def find_stress(self, s):
+    def find_stress(self, s_ges):
+        s = s_ges/self.n_series
+
         stress = np.zeros(5)
 
         A = (4 * self.E)/(1 - self.mu**2)
@@ -97,59 +114,30 @@ class DiscSpring:
 
         stress[0] = prefix * 3/math.pi
         stress[1] = prefix * \
-            (self.K_4 * self.K_2 * (self.h0/self.t - s/(2*self.t)) + self.K_3)
+            (self.K_4 * self.K_2 * (self.h_o/self.t - s/(2*self.t)) + self.K_3)
         stress[2] = prefix * \
-            (self.K_4 * self.K_2 * (self.h0/self.t - s/(2*self.t)) - self.K_3)
+            (self.K_4 * self.K_2 * (self.h_o/self.t - s/(2*self.t)) - self.K_3)
         stress[3] = prefix * (1 / self.delta) * \
             (self.K_4 * (self.K_2 - 2*self.K_3) * \
-            (self.h0/self.t - s/(2*self.t)) - self.K_3)
+            (self.h_o/self.t - s/(2*self.t)) - self.K_3)
         stress[4] = prefix * (1 / self.delta) * \
             (self.K_4 * (self.K_2 - 2*self.K_3) * \
-            (self.h0/self.t - s/(2*self.t)) + self.K_3)
+            (self.h_o/self.t - s/(2*self.t)) + self.K_3)
 
         return stress
 
-    def find_max_stress(self):
-        max_s = 0.75 * self.h0
-        
-        StressTable = np.zeros([100,5])
-        for j in range(100):
-            StressTable[j] = self.find_stress(max_s*(j+1)/100)
-        
-
-        max_stress = np.amax(StressTable, axis=0)
-
-        
-        return max_stress
-
-class SpringStack(DiscSpring):
-    def __init__(self, Input, n):
-        super().__init__(Input)
-        self.n_series = int(n[0])
-        self.n_parallel = int(n[2])
-        #self.L_ges = self.n_series * (self.I_o + (self.n_parallel - 1)* self.t)
-        #self.H_ges = self.L_ges - self.t * self.n_series
-
-    def find_stack_s(self, s):
-        s_ges = self.n_series * s
-
-    def find_stack_force(self, s):
-        F_ges = self.n_parallel * s
-
-
-
 
 def plot_force(spring, folder, run_number):
-    s = np.linspace(0, spring.h0, 100)
+    s_ges = np.linspace(0, spring.H_o, 100)
     F = np.zeros(100)
 
-    for i in range(len(s)):
-        F[i] = spring.find_force(s[i])
+    for i in range(len(s_ges)):
+        F[i] = spring.find_force(s_ges[i])
 
-    plt.plot(s,F, label='data')
-    plt.axvline(x=spring.h0, c='r', ls='--', label='Flat')
-    plt.axvline(x=0.75*spring.h0, c='y', ls='--', label='75% Flat')
-    plt.axvline(x=0.75*spring.h0 - 1.5, c='g', ls='--', label='Resting')
+    plt.plot(s_ges,F, label='data')
+    plt.axvline(x=spring.h_o, c='r', ls='--', label='Flat')
+    plt.axvline(x=0.75*spring.h_o, c='y', ls='--', label='75% Flat')
+    plt.axvline(x=0.75*spring.h_o - 1.5, c='g', ls='--', label='Resting')
     plt.legend(loc="upper left")
 
     plt.xlabel("Displacement (mm)")
@@ -157,54 +145,71 @@ def plot_force(spring, folder, run_number):
     plt.title("Run #{}. Spring Force Displacement Plot".format(run_number+1))
     plt.grid(which='major')
 
-    plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.3)
+    plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.35)
     textstr = "teststr"
-    plt.gcf().text(0.1, 0.16, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
-    plt.gcf().text(0.1, 0.11, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
-    plt.gcf().text(0.1, 0.06, "Uncompressed Height (mm): %.1f" % spring.I_o, fontsize=10)
-    plt.gcf().text(0.1, 0.01, "Thickness (mm): %.1f" % spring.t, fontsize=10)
+    plt.gcf().text(0.1, 0.21, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
+    plt.gcf().text(0.1, 0.16, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
+    plt.gcf().text(0.1, 0.11, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
+    plt.gcf().text(0.1, 0.06, "Thickness (mm): %.1f" % spring.t, fontsize=10)
+    plt.gcf().text(0.1, 0.01, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
 
-    plt.gcf().text(0.5, 0.16, 'Resting Force (N): %.1f' % spring.find_force(spring.h0*0.75 - 1.5), fontsize=10)
-    plt.gcf().text(0.5, 0.11, "Loaded Force (N): %.1f" % spring.find_force(spring.h0*0.75), fontsize=10)
-    plt.gcf().text(0.5, 0.06, "Max Stress (MPa): %.1f" % max(spring.find_max_stress()), fontsize=10)
-    plt.gcf().text(0.5, 0.01, "Source: {}".format(spring.fileName), fontsize=10)
+    plt.gcf().text(0.5, 0.21, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
+    plt.gcf().text(0.5, 0.16, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
+    plt.gcf().text(0.5, 0.11, "Max Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
+    plt.gcf().text(0.5, 0.06, "Material: {}".format(spring.Material), fontsize=10)
+    plt.gcf().text(0.5, 0.01, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
     
-    plt.savefig("{}/run{}".format(folder, run_number+1))
+    file = "{}/force_run{}.png".format(folder, run_number+1)
+    plt.savefig(file)
+
+    s3 = boto3.resource('s3')
+    s3.meta.client.upload_file(file, 'discspring-output', file, ExtraArgs={'ACL': 'public-read'})
+    url = "https://discspring-output.s3.amazonaws.com/" + file
+    print(url)
+
+    plt.show()
     plt.close()
 
-
-def plot_stack_force(spring, folder, run_number):
-    s = np.linspace(0, spring.h0, 100)
+def plot_stress(spring, folder, run_number):
+    s_ges = np.linspace(0, spring.H_o, 100)
     F = np.zeros(100)
 
-    for i in range(len(s)):
-        F[i] = spring.find_force(s[i])
+    for i in range(len(s_ges)):
+        F[i] = spring.find_stress(s_ges[i])[1]
 
-    s_ges = s * spring.n_series
-    F_ges = F * spring.n_parallel
-
-    plt.plot(s_ges,F_ges, label='data')
-    # plt.axvline(x=spring.h0, c='r', ls='--', label='Flat')
-    # plt.axvline(x=0.75*spring.h0, c='y', ls='--', label='75% Flat')
-    # plt.axvline(x=0.75*spring.h0 - 1.5, c='g', ls='--', label='Resting')
+    plt.plot(s_ges,F, label='data')
+    plt.axvline(x=spring.h_o, c='r', ls='--', label='Flat')
+    plt.axvline(x=0.75*spring.h_o, c='y', ls='--', label='75% Flat')
+    plt.axvline(x=0.75*spring.h_o - 1.5, c='g', ls='--', label='Resting')
     plt.legend(loc="upper left")
 
     plt.xlabel("Displacement (mm)")
-    plt.ylabel("Force (N)")
-    plt.title("Run #{}. Spring Force Displacement Plot".format(run_number+1))
+    plt.ylabel("Stress (MPa)")
+    plt.title("Run #{}. Spring Stress Plot".format(run_number+1))
     plt.grid(which='major')
 
-    plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.3)
+    plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.35)
     textstr = "teststr"
-    plt.gcf().text(0.1, 0.16, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
-    plt.gcf().text(0.1, 0.11, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
-    plt.gcf().text(0.1, 0.06, "Uncompressed Height (mm): %.1f" % spring.I_o, fontsize=10)
-    plt.gcf().text(0.1, 0.01, "Thickness (mm): %.1f" % spring.t, fontsize=10)
+    plt.gcf().text(0.1, 0.21, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
+    plt.gcf().text(0.1, 0.16, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
+    plt.gcf().text(0.1, 0.11, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
+    plt.gcf().text(0.1, 0.06, "Thickness (mm): %.1f" % spring.t, fontsize=10)
+    plt.gcf().text(0.1, 0.01, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
 
-    plt.gcf().text(0.5, 0.16, 'Resting Force (N): %.1f' % spring.find_force(spring.h0*0.75 - 1.5), fontsize=10)
-    plt.gcf().text(0.5, 0.11, "Loaded Force (N): %.1f" % spring.find_force(spring.h0*0.75), fontsize=10)
-    plt.gcf().text(0.5, 0.06, "Max Stress (MPa): %.1f" % max(spring.find_max_stress()), fontsize=10)
-    plt.gcf().text(0.5, 0.01, "Source: {}".format(spring.fileName), fontsize=10)
+    plt.gcf().text(0.5, 0.21, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
+    plt.gcf().text(0.5, 0.16, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
+    plt.gcf().text(0.5, 0.11, "Max Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
+    plt.gcf().text(0.5, 0.06, "Material: {}".format(spring.Material), fontsize=10)
+    plt.gcf().text(0.5, 0.01, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
     
-    plt.savefig("{}/run{}".format(folder, run_number+1))
+
+    file = "{}/stress_run{}.png".format(folder, run_number+1)
+    plt.savefig(file)
+
+    s3 = boto3.resource('s3')
+    s3.meta.client.upload_file(file, 'discspring-output', file, ExtraArgs={'ACL': 'public-read'})
+    url = "https://discspring-output.s3.amazonaws.com/" + file
+    print(url)
+
+    plt.show()
     plt.close()
