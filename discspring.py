@@ -9,7 +9,7 @@ import boto3
 
 class DiscSpring:
     #t1 = t'
-    def __init__(self, Input, Material, E, mu):
+    def __init__(self, Input=[0,0,0,0], Material="", E=0, mu=0):
         self.fileName = "" #default value to be overwritten
         self.D_e = Input[0]
         self.D_i = Input[1]
@@ -127,7 +127,7 @@ class DiscSpring:
         return stress
 
 
-def plot_force(spring, folder, run_number):
+def plot_force(spring, run_number, folder=None):
     s_ges = np.linspace(0, spring.H_o, 100)
     F = np.zeros(100)
 
@@ -159,18 +159,19 @@ def plot_force(spring, folder, run_number):
     plt.gcf().text(0.5, 0.06, "Material: {}".format(spring.Material), fontsize=10)
     plt.gcf().text(0.5, 0.01, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
     
-    file = "{}/force_run{}.png".format(folder, run_number+1)
-    plt.savefig(file)
+    if folder != None:
+        file = "{}/force_run{}.png".format(folder, run_number+1)
+        plt.savefig(file)
 
-    s3 = boto3.resource('s3')
-    s3.meta.client.upload_file(file, 'discspring-output', file, ExtraArgs={'ACL': 'public-read'})
-    url = "https://discspring-output.s3.amazonaws.com/" + file
-    print(url)
+        s3 = boto3.resource('s3')
+        s3.meta.client.upload_file(file, 'discspring-output', file, ExtraArgs={'ACL': 'public-read'})
+        url = "https://discspring-output.s3.amazonaws.com/" + file
+        print(url)
 
     plt.show()
     plt.close()
 
-def plot_stress(spring, folder, run_number):
+def plot_stress(spring, run_number, folder=None):
     s_ges = np.linspace(0, spring.H_o, 100)
     F = np.zeros(100)
 
@@ -203,13 +204,14 @@ def plot_stress(spring, folder, run_number):
     plt.gcf().text(0.5, 0.01, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
     
 
-    file = "{}/stress_run{}.png".format(folder, run_number+1)
-    plt.savefig(file)
+    if folder != None:
+        file = "{}/stress_run{}.png".format(folder, run_number+1)
+        plt.savefig(file)
 
-    s3 = boto3.resource('s3')
-    s3.meta.client.upload_file(file, 'discspring-output', file, ExtraArgs={'ACL': 'public-read'})
-    url = "https://discspring-output.s3.amazonaws.com/" + file
-    print(url)
+        s3 = boto3.resource('s3')
+        s3.meta.client.upload_file(file, 'discspring-output', file, ExtraArgs={'ACL': 'public-read'})
+        url = "https://discspring-output.s3.amazonaws.com/" + file
+        print(url)
 
     plt.show()
     plt.close()

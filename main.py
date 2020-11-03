@@ -57,8 +57,8 @@ if __name__ == "__main__":
         folder_string = "results/run" + now.strftime("_%y%m%d_%H%M%S")
         Path(folder_string).mkdir(parents=True, exist_ok=True)
 
-        plot_force(spring,folder_string, 0)
-        plot_stress(spring,folder_string, 0)
+        plot_force(spring,0)
+        plot_stress(spring, 0)
 
         print("Force:{}".format(spring.find_force(max_s)))
         print("Rest-Force:{}".format(spring.find_force(max_s-1.5)))
