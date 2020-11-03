@@ -2,8 +2,6 @@ import numpy as np
 import itertools
 from discspring import *
 import pandas as pd
-import progressbar
-
 
 
 def bruteForce(Columns, Input_File, Output_File, Material, E, mu, Max_Stress):
