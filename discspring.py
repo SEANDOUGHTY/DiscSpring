@@ -9,7 +9,7 @@ import boto3
 
 class DiscSpring:
     #t1 = t'
-    def __init__(self, Input=[0,0,0,0,0,0], Material="", E=0, mu=0):
+    def __init__(self, Input, Material, E, mu):
         self.fileName = "" #default value to be overwritten
         self.D_e = Input[0]
         self.D_i = Input[1]

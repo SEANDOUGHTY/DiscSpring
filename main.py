@@ -40,7 +40,7 @@ def run_Table(Data):
 
 
 if __name__ == "__main__":
-    mode = "Spring"
+    mode = "Brute"
       
     if mode == "Table":
 
@@ -73,14 +73,15 @@ if __name__ == "__main__":
         Data = pd.read_csv(file)
         Columns = Data.columns
 
-        Input = "brute/brute_input_8.csv"
-        Output = "brute/brute_output_8.csv"
-        temp = bruteForce(Columns, Input, Output, Material="Ti-6Al-4V", E=108500, mu=0.34, Max_Stress=450)
+        Input = "brute/brute_input_10_Aluminum.csv"
+        Output = "brute/brute_output_10_Aluminum.csv"
+        temp = bruteForce(Columns, Input, Output, Material="Aluminum 7075", E=72000, mu=0.33, Max_Stress=420)
 
         s3 = boto3.resource('s3')
         s3.meta.client.upload_file(Input, 'discspring-output', Input, ExtraArgs={'ACL': 'public-read'})
         s3.meta.client.upload_file(Output, 'discspring-output', Output, ExtraArgs={'ACL': 'public-read'})
         url = "https://discspring-output.s3.amazonaws.com/" + Input
+        print(url)
         url = "https://discspring-output.s3.amazonaws.com/" + Output
         print(url)
     
