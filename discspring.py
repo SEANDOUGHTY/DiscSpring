@@ -155,7 +155,7 @@ def plot_force(spring, run_number, folder=None):
 
     plt.gcf().text(0.5, 0.26, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
     plt.gcf().text(0.5, 0.21, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
-    plt.gcf().text(0.5, 0.16, "Loaded Max Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
+    plt.gcf().text(0.5, 0.16, "Loaded Max Stress (MPa): %.1f" % max(abs(spring.find_stress(spring.h_o*0.75))), fontsize=10)
     plt.gcf().text(0.5, 0.11, "Material: {}".format(spring.Material), fontsize=10)
     plt.gcf().text(0.5, 0.06, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
     plt.gcf().text(0.5, 0.01, "Number Parallel: %.0f" % spring.n_parallel, fontsize=10)
@@ -206,7 +206,7 @@ def plot_stress(spring, run_number, folder=None):
 
     plt.gcf().text(0.5, 0.26, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
     plt.gcf().text(0.5, 0.21, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
-    plt.gcf().text(0.5, 0.16, "Loaded Max Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
+    plt.gcf().text(0.5, 0.16, "Loaded Max Stress (MPa): %.1f" % max(abs(spring.find_stress(spring.h_o*0.75))), fontsize=10)
     plt.gcf().text(0.5, 0.11, "Material: {}".format(spring.Material), fontsize=10)
     plt.gcf().text(0.5, 0.06, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
     plt.gcf().text(0.5, 0.01, "Number Parallel: %.0f" % spring.n_parallel, fontsize=10)
