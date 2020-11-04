@@ -142,23 +142,25 @@ def plot_force(spring, run_number, folder=None):
 
     plt.xlabel("Displacement (mm)")
     plt.ylabel("Force (N)")
-    plt.title("Run #{}. Spring Force Displacement Plot".format(run_number+1))
+    plt.title("Spring Force Displacement Plot".format(run_number+1))
     plt.grid(which='major')
 
     plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.40)
     plt.gcf().text(0.1, 0.26, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
-    plt.gcf().text(0.1, 0.21, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
-    plt.gcf().text(0.1, 0.16, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
-    plt.gcf().text(0.1, 0.11, "Single Thickness (mm): %.1f" % spring.t, fontsize=10)
-    plt.gcf().text(0.1, 0.06, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
-    plt.gcf().text(0.1, 0.01, "Number Series:  %.0f" % spring.n_series, fontsize=10)
-
+    plt.gcf().text(0.1, 0.22, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
+    plt.gcf().text(0.1, 0.18, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
+    plt.gcf().text(0.1, 0.14, "Max Tensile Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
+    plt.gcf().text(0.1, 0.10, "Number Series:  %.0f" % spring.n_series, fontsize=10)
+    plt.gcf().text(0.1, 0.06, "Material: {}".format(spring.Material), fontsize=10)
+    plt.gcf().text(0.1, 0.02, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
+    
     plt.gcf().text(0.5, 0.26, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
-    plt.gcf().text(0.5, 0.21, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
-    plt.gcf().text(0.5, 0.16, "Loaded Max Stress (MPa): %.1f" % max(abs(spring.find_stress(spring.h_o*0.75))), fontsize=10)
-    plt.gcf().text(0.5, 0.11, "Material: {}".format(spring.Material), fontsize=10)
-    plt.gcf().text(0.5, 0.06, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
-    plt.gcf().text(0.5, 0.01, "Number Parallel: %.0f" % spring.n_parallel, fontsize=10)
+    plt.gcf().text(0.5, 0.22, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
+    plt.gcf().text(0.5, 0.18, "Single Thickness (mm): %.1f" % spring.t, fontsize=10)
+    plt.gcf().text(0.5, 0.14, "Max Compressive Stress (MPa): %.1f" % abs(min(spring.find_stress(spring.h_o*0.75))), fontsize=10)
+    plt.gcf().text(0.5, 0.10, "Number Parallel: %.0f" % spring.n_parallel, fontsize=10)
+    plt.gcf().text(0.5, 0.06, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
+    
     
     fig = plt.gcf()
     fig.set_size_inches(9, 6)
@@ -187,29 +189,30 @@ def plot_stress(spring, run_number, folder=None):
     plt.axvline(x=spring.h_o, c='r', ls='--', label='Flat')
     plt.axvline(x=0.75*spring.h_o, c='y', ls='--', label='75% Flat')
     plt.axvline(x=0.75*spring.h_o - 1.5, c='g', ls='--', label='Resting')
-    plt.legend(('Comp. Stress OM', 'Comp. Stress 1', 'Tens. Stress 2', 'Tens. Stress 3', \
-        'Comp. Stress 4', 'Flat', 'Loaded', 'Resting'), loc="upper left")
+    plt.legend(('$\sigma_{OMc}$', '$\sigma_{1c}$', '$\sigma_{2t}$', '$\sigma_{3t}$', \
+        '$\sigma_{4c}$', 'Flat', 'Loaded', 'Resting'), loc="upper left")
 
     
     plt.xlabel("Displacement (mm)")
     plt.ylabel("Stress (MPa)")
-    plt.title("Run #{}. Spring Stress Plot".format(run_number+1))
+    plt.title("Spring Stress Plot".format(run_number+1))
     plt.grid(which='major')
 
     plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.40)
     plt.gcf().text(0.1, 0.26, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
-    plt.gcf().text(0.1, 0.21, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
-    plt.gcf().text(0.1, 0.16, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
-    plt.gcf().text(0.1, 0.11, "Single Thickness (mm): %.1f" % spring.t, fontsize=10)
-    plt.gcf().text(0.1, 0.06, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
-    plt.gcf().text(0.1, 0.01, "Number Series:  %.0f" % spring.n_series, fontsize=10)
-
+    plt.gcf().text(0.1, 0.22, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
+    plt.gcf().text(0.1, 0.18, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
+    plt.gcf().text(0.1, 0.14, "Max Tensile Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
+    plt.gcf().text(0.1, 0.10, "Number Series:  %.0f" % spring.n_series, fontsize=10)
+    plt.gcf().text(0.1, 0.06, "Material: {}".format(spring.Material), fontsize=10)
+    plt.gcf().text(0.1, 0.02, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
+    
     plt.gcf().text(0.5, 0.26, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
-    plt.gcf().text(0.5, 0.21, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
-    plt.gcf().text(0.5, 0.16, "Loaded Max Stress (MPa): %.1f" % max(abs(spring.find_stress(spring.h_o*0.75))), fontsize=10)
-    plt.gcf().text(0.5, 0.11, "Material: {}".format(spring.Material), fontsize=10)
-    plt.gcf().text(0.5, 0.06, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
-    plt.gcf().text(0.5, 0.01, "Number Parallel: %.0f" % spring.n_parallel, fontsize=10)
+    plt.gcf().text(0.5, 0.22, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
+    plt.gcf().text(0.5, 0.18, "Single Thickness (mm): %.1f" % spring.t, fontsize=10)
+    plt.gcf().text(0.5, 0.14, "Max Compressive Stress (MPa): %.1f" % abs(min(spring.find_stress(spring.h_o*0.75))), fontsize=10)
+    plt.gcf().text(0.5, 0.10, "Number Parallel: %.0f" % spring.n_parallel, fontsize=10)
+    plt.gcf().text(0.5, 0.06, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
     
     fig = plt.gcf()
     fig.set_size_inches(9, 6)
