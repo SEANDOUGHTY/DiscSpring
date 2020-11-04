@@ -110,7 +110,7 @@ class DiscSpring:
         D = s/self.t
         E = 3/math.pi
 
-        prefix = A*B*C*D #common to all stresses
+        prefix = -A*B*C*D #common to all stresses
 
         stress[0] = prefix * 3/math.pi
         stress[1] = prefix * \
@@ -134,9 +134,9 @@ def plot_force(spring, run_number, folder=None):
     for i in range(len(s_ges)):
         F[i] = spring.find_force(s_ges[i])
 
-    plt.plot(s_ges,F, label='data')
+    plt.plot(s_ges,F, label='Force')
     plt.axvline(x=spring.h_o, c='r', ls='--', label='Flat')
-    plt.axvline(x=0.75*spring.h_o, c='y', ls='--', label='75% Flat')
+    plt.axvline(x=0.75*spring.h_o, c='y', ls='--', label='Loaded')
     plt.axvline(x=0.75*spring.h_o - 1.5, c='g', ls='--', label='Resting')
     plt.legend(loc="upper left")
 
@@ -145,23 +145,27 @@ def plot_force(spring, run_number, folder=None):
     plt.title("Run #{}. Spring Force Displacement Plot".format(run_number+1))
     plt.grid(which='major')
 
-    plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.35)
-    textstr = "teststr"
-    plt.gcf().text(0.1, 0.21, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
-    plt.gcf().text(0.1, 0.16, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
-    plt.gcf().text(0.1, 0.11, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
-    plt.gcf().text(0.1, 0.06, "Thickness (mm): %.1f" % spring.t, fontsize=10)
-    plt.gcf().text(0.1, 0.01, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
+    plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.40)
+    plt.gcf().text(0.1, 0.26, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
+    plt.gcf().text(0.1, 0.21, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
+    plt.gcf().text(0.1, 0.16, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
+    plt.gcf().text(0.1, 0.11, "Single Thickness (mm): %.1f" % spring.t, fontsize=10)
+    plt.gcf().text(0.1, 0.06, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
+    plt.gcf().text(0.1, 0.01, "Number Series:  %.0f" % spring.n_series, fontsize=10)
 
-    plt.gcf().text(0.5, 0.21, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
-    plt.gcf().text(0.5, 0.16, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
-    plt.gcf().text(0.5, 0.11, "Max Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
-    plt.gcf().text(0.5, 0.06, "Material: {}".format(spring.Material), fontsize=10)
-    plt.gcf().text(0.5, 0.01, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
+    plt.gcf().text(0.5, 0.26, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
+    plt.gcf().text(0.5, 0.21, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
+    plt.gcf().text(0.5, 0.16, "Loaded Max Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
+    plt.gcf().text(0.5, 0.11, "Material: {}".format(spring.Material), fontsize=10)
+    plt.gcf().text(0.5, 0.06, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
+    plt.gcf().text(0.5, 0.01, "Number Parallel: %.0f" % spring.n_parallel, fontsize=10)
     
+    fig = plt.gcf()
+    fig.set_size_inches(9, 6)
+
     if folder != None:
         file = "{}/force_run{}.png".format(folder, run_number+1)
-        plt.savefig(file)
+        fig.savefig(file)
 
         s3 = boto3.resource('s3')
         s3.meta.client.upload_file(file, 'discspring-output', file, ExtraArgs={'ACL': 'public-read'})
@@ -173,40 +177,46 @@ def plot_force(spring, run_number, folder=None):
 
 def plot_stress(spring, run_number, folder=None):
     s_ges = np.linspace(0, spring.H_o, 100)
-    F = np.zeros(100)
+    Stress = np.zeros([100,5])
 
     for i in range(len(s_ges)):
-        F[i] = spring.find_stress(s_ges[i])[1]
+        Stress[i] = spring.find_stress(s_ges[i])
+    Stress = np.absolute(Stress)
 
-    plt.plot(s_ges,F, label='data')
+    plt.plot(s_ges,Stress, label=("data", "data") )
     plt.axvline(x=spring.h_o, c='r', ls='--', label='Flat')
     plt.axvline(x=0.75*spring.h_o, c='y', ls='--', label='75% Flat')
     plt.axvline(x=0.75*spring.h_o - 1.5, c='g', ls='--', label='Resting')
-    plt.legend(loc="upper left")
+    plt.legend(('Comp. Stress OM', 'Comp. Stress 1', 'Tens. Stress 2', 'Tens. Stress 3', \
+        'Comp. Stress 4', 'Flat', 'Loaded', 'Resting'), loc="upper left")
 
+    
     plt.xlabel("Displacement (mm)")
     plt.ylabel("Stress (MPa)")
     plt.title("Run #{}. Spring Stress Plot".format(run_number+1))
     plt.grid(which='major')
 
-    plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.35)
-    textstr = "teststr"
-    plt.gcf().text(0.1, 0.21, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
-    plt.gcf().text(0.1, 0.16, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
-    plt.gcf().text(0.1, 0.11, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
-    plt.gcf().text(0.1, 0.06, "Thickness (mm): %.1f" % spring.t, fontsize=10)
-    plt.gcf().text(0.1, 0.01, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
+    plt.subplots_adjust(left=0.12, right=0.9, top=0.9, bottom=0.40)
+    plt.gcf().text(0.1, 0.26, "Outer Diameter (mm): %.1f" % spring.D_e, fontsize=10)
+    plt.gcf().text(0.1, 0.21, "Inner Diameter (mm): %.1f" % spring.D_i, fontsize=10)
+    plt.gcf().text(0.1, 0.16, "Uncompressed Height (mm): %.1f" % spring.l_o, fontsize=10)
+    plt.gcf().text(0.1, 0.11, "Single Thickness (mm): %.1f" % spring.t, fontsize=10)
+    plt.gcf().text(0.1, 0.06, "Young's Modulus (MPa): %.0f" % spring.E, fontsize=10)
+    plt.gcf().text(0.1, 0.01, "Number Series:  %.0f" % spring.n_series, fontsize=10)
 
-    plt.gcf().text(0.5, 0.21, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
-    plt.gcf().text(0.5, 0.16, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
-    plt.gcf().text(0.5, 0.11, "Max Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
-    plt.gcf().text(0.5, 0.06, "Material: {}".format(spring.Material), fontsize=10)
-    plt.gcf().text(0.5, 0.01, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
+    plt.gcf().text(0.5, 0.26, 'Resting Force (N): %.1f' % spring.find_force(spring.h_o*0.75 - 1.5), fontsize=10)
+    plt.gcf().text(0.5, 0.21, "Loaded Force (N): %.1f" % spring.find_force(spring.h_o*0.75), fontsize=10)
+    plt.gcf().text(0.5, 0.16, "Loaded Max Stress (MPa): %.1f" % max(spring.find_stress(spring.h_o*0.75)), fontsize=10)
+    plt.gcf().text(0.5, 0.11, "Material: {}".format(spring.Material), fontsize=10)
+    plt.gcf().text(0.5, 0.06, "Poisson's Ratio: %.2f" % spring.mu, fontsize=10)
+    plt.gcf().text(0.5, 0.01, "Number Parallel: %.0f" % spring.n_parallel, fontsize=10)
     
+    fig = plt.gcf()
+    fig.set_size_inches(9, 6)
 
     if folder != None:
         file = "{}/stress_run{}.png".format(folder, run_number+1)
-        plt.savefig(file)
+        fig.savefig(file)
 
         s3 = boto3.resource('s3')
         s3.meta.client.upload_file(file, 'discspring-output', file, ExtraArgs={'ACL': 'public-read'})
