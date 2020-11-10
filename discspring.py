@@ -174,8 +174,9 @@ def plot_force(spring, run_number, folder=None):
         url = "https://discspring-output.s3.amazonaws.com/" + file
         print(url)
 
-    plt.show()
+    #plt.show()
     plt.close()
+    return fig
 
 def plot_stress(spring, run_number, folder=None):
     s_ges = np.linspace(0, spring.H_o, 100)
@@ -226,5 +227,6 @@ def plot_stress(spring, run_number, folder=None):
         url = "https://discspring-output.s3.amazonaws.com/" + file
         print(url)
 
-    plt.show()
+    #plt.show()
     plt.close()
+    return fig
