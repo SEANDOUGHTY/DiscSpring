@@ -1,0 +1,50 @@
+#page-container {
+  position: relative;
+  min-height: 100vh;
+}
+
+.heading {
+  text-align: center;
+  margin: auto;
+  padding: 50px;
+  background-color: #f4f4f2;
+}
+  
+.content {
+  padding-top: 25px;
+  background-color: white;
+  padding-bottom: 100px;
+}
+
+.footer {
+  background-color: #f4f4f2;
+  padding: 20px 0;
+  text-align: center;  
+  position: absolute;
+  bottom: 0;
+  width: 100%;
+}
+
+
+
+sub {
+    vertical-align: sub;
+    font-size: smaller;
+  }
+
+.data-row {
+  padding: 0px 50px;
+}
+
+.plot {
+  width: 110%;
+}
+
+/* .data-form {
+  padding-top: 30px;
+} */
+
+#submit {
+  margin-top: 30px;
+}
+
