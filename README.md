@@ -12,6 +12,3 @@ The first step is constructing a *Disc Spring* Object using input parameters and
 4. Optimization based on Objectives & Constraints
 
 ## Setup
-
-The easiest way to experiment with and use the code is by using the [*Google Colab Template*](https://colab.research.google.com/drive/1UgclyKmcOkX-6VZwaJZjRkXwVk9HCP14?usp=sharing). This is optimal for quickly inputting, plotting & comparing different disc springs.
-
