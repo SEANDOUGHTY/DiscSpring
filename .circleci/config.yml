@@ -5,12 +5,12 @@ jobs:
       - image: tiangolo/uwsgi-nginx:python3.8
     steps:
       - checkout
-      - run:s
+      - run:
           name: Install Python Dependencies
           command: |
-            echo 'export PATH=>$PATH:~/.local/bin' >> $BASH_ENV && source $BASH_ENV
+            echo 'export PATH=>~$PATH:~/.local/bin' >> $BASH_ENV && source $BASH_ENV
             pip install --user -r requirements.txt
-      - run:s
+      - run:
           name: Run Unit Tests
           command: |
             pytest --junitxml=test-reports/junit.xml --html=test-reports/pytest_report.html --self-contained.html
