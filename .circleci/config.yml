@@ -18,9 +18,7 @@ jobs:
           path: test-reports
       - store_artifacts:
           path: test-reports
-
-
 workflows:
   build_test:
-    jobs:s
+    jobs:
       - run_tests
