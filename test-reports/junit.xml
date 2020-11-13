@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?><testsuites><testsuite name="pytest" errors="0" failures="1" skipped="0" tests="4" time="0.449" timestamp="2020-11-13T17:04:24.152096" hostname="ubuntu"><testcase classname="flask.test.TestApp" name="test_FigureGeneration" time="0.008"><failure message="AssertionError: 500 != 200">self = &lt;test.TestApp testMethod=test_FigureGeneration&gt;
+
+    def test_FigureGeneration(self):
+        response = self.app.get('/force.png')
+&gt;       self.assertEqual(response.status_code, 200)
+E       AssertionError: 500 != 200
+
+flask/test.py:17: AssertionError</failure></testcase><testcase classname="flask.test.TestApp" name="test_Force" time="0.001" /><testcase classname="flask.test.TestApp" name="test_Stress" time="0.001" /><testcase classname="flask.test.TestApp" name="test_status_code" time="0.005" /></testsuite></testsuites>
