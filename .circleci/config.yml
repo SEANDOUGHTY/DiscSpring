@@ -4,9 +4,16 @@ version: 2.1
 jobs:
   run_tests:
     docker:
-      - image: seandoughty/discspring-flask
+      - image: tiangolo/uwsgi-nginx:python3.8
     steps:
       - checkout
+    run:
+      name: Install Python Dependencies
+      command: |
+        echo 'export PATH=>$PATH:~/.local/bin' >> $BASH_ENV && source $BASH_ENV
+        pip install --user -r requirements.txt
+    run:
+      name: Run Unit Tests
 
 
 
@@ -14,4 +21,4 @@ jobs:
 workflows:
   main:
     jobs:
-      - build-and-test
+      - run_tests
