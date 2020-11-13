@@ -9,6 +9,7 @@ jobs:
           name: Install Python Dependencies
           command: |
             echo 'export PATH=>~$PATH:~/.local/bin' >> $BASH_ENV && source $BASH_ENV
+            ls
             pip install --user -r flask/requirements.txt
       - run:
           name: Run Unit Tests
